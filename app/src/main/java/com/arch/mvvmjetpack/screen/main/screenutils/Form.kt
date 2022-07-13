@@ -1,30 +1,32 @@
 package com.arch.mvvmjetpack.screen.main.screenutils
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 
 @Composable
-fun Form(state: FormState, fields: List<Field>) {
-    state.fields = fields
-
-    Column {
-        fields.forEach {
+fun Form(state: FormState, formFields: List<BaseField>) {
+    state.formFields = formFields
+    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+        items(formFields) {
             it.Content()
         }
     }
 }
 
 class FormState {
-    var fields: List<Field> = listOf()
+    var formFields: List<BaseField> = listOf()
 
     fun validate(): Boolean {
         var valid = true
-        for (field in fields) if (!field.validate()) {
+        for (field in formFields) if (!field.validate()) {
             valid = false
-            break
+            continue
         }
         return valid
     }
 
-    fun getData(): Map<String, String> = fields.associate { it.name to it.text }
+    fun getData(): Map<String, String> = formFields.associate { it.name to it.text }
 }

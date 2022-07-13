@@ -3,13 +3,10 @@ package com.arch.mvvmjetpack.screen.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.arch.mvvmjetpack.data.news.Result
-import com.arch.mvvmjetpack.network.BaseResult
 import com.arch.mvvmjetpack.network.NetworkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,19 +19,7 @@ class DashboardViewModel @Inject constructor(private val repository: NetworkRepo
 
     fun loadAllProducts() {
         viewModelScope.launch {
-            repository.getAllNews().onStart {
-                currentState.value = NewsListState.IsLoading(true)
-            }.catch {
-                currentState.value = NewsListState.IsLoading(false)
-            }.collect { ml ->
-                currentState.value = NewsListState.IsLoading(false)
-                when (ml) {
-                    is BaseResult.Success -> {
-                        currentState.value = NewsListState.Data(ml.data.results ?: emptyList())
-                    }
-                    else -> {}
-                }
-            }
+
 
         }
     }

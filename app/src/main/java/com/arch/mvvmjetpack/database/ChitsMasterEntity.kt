@@ -6,10 +6,10 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class ChitsMasterEntity(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     val id: Int,
     @ColumnInfo(name = "title") val title: String?,
-    @ColumnInfo(name = "currencyId") val currencyId: Int?,
+    @ColumnInfo(name = "currencyId") val currencyId: String?,
     @ColumnInfo(name = "startDate") val startDate: String?,
     @ColumnInfo(name = "endDate") val endDate: String?,
     @ColumnInfo(name = "drawDate") val drawDate: String?,

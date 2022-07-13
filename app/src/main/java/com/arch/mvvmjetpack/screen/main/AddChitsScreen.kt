@@ -1,47 +1,41 @@
 package com.arch.mvvmjetpack.screen.main
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.arch.mvvmjetpack.R
+import com.arch.mvvmjetpack.database.ChitsMasterEntity
+import com.arch.mvvmjetpack.screen.main.screenutils.*
 
 
 @Composable
 fun AddChitsScreen(navController: NavHostController, viewModel: AddChitsViewModel) {
-    val textOutLineStyle = TextFieldDefaults.outlinedTextFieldColors(
-        focusedBorderColor = colorResource(
-            id = R.color.semi_green,
-        ),
-        unfocusedBorderColor = colorResource(id = R.color.semi_green),
-        focusedLabelColor = colorResource(id = R.color.semi_green),
-    )
-    var title by remember { mutableStateOf("") }
-    var currency by remember { mutableStateOf("") }
-    var drawAmount by remember { mutableStateOf("") }
-    var installment by remember { mutableStateOf("") }
-    var startDate by remember { mutableStateOf("") }
-    var endDate by remember { mutableStateOf("") }
-    var drawDate by remember { mutableStateOf("") }
-
+    val collectAsState by viewModel.mState.collectAsState()
+//    when (collectAsState) {
+//        is AddChitState.IsLoading -> {
+//
+//        }
+//        is AddChitState.Data -> {
+//
+//        }
+//        is AddChitState.Init -> {}
+//        is AddChitState.ShowToast -> {}
+//    }
     Scaffold(topBar = {
         TopAppBar(
             title = {
@@ -61,229 +55,135 @@ fun AddChitsScreen(navController: NavHostController, viewModel: AddChitsViewMode
         )
     }) {
 
+        val state by remember { mutableStateOf(FormState()) }
+
         Box(modifier = Modifier.fillMaxWidth()) {
-            val items = ArrayList<String>()
-            items.add("د.إ")
-            items.add("₹")
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                item {
-                    OutlinedTextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        label = { Text("Title") },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        maxLines = 2,
-                        textStyle = TextStyle(
-                            color = colorResource(id = R.color.semi_green),
-                            fontWeight = FontWeight.Bold
+            val items = mapOf(Pair("د.إ", "UAE"), Pair("₹", "India"))
+            Column {
+                Form(
+                    state = state, formFields = listOf(
+                        FormTextField(
+                            label = "Title",
+                            name = "title",
+                            validators = listOf(Required("Title cannot be empty")),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next
+                            )
                         ),
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .fillMaxWidth(), colors = textOutLineStyle
-                    )
-                }
-                item {
-                    SpecimenSpinners(textOutLineStyle, specimens = items) {
-                        currency = it
-                    }
-                }
-                item {
-                    OutlinedTextField(
-                        value = drawAmount,
-                        onValueChange = { drawAmount = it },
-                        label = { Text("Draw amount") },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Next
-                        ),
-                        maxLines = 2,
-                        textStyle = TextStyle(
-                            color = colorResource(id = R.color.semi_green),
-                            fontWeight = FontWeight.Bold
-                        ),
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .fillMaxWidth(), colors = textOutLineStyle
-                    )
 
-                }
-                item {
-                    OutlinedTextField(
-                        value = installment,
-                        onValueChange = { installment = it },
-                        label = { Text("Installment") },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Next
+                        FormPickerField(
+                            label = "Currency",
+                            name = "currency",
+                            validators = listOf(Required("currency cannot be empty")),
+                            specimens = items
                         ),
-                        maxLines = 2,
-                        textStyle = TextStyle(
-                            color = colorResource(id = R.color.semi_green),
-                            fontWeight = FontWeight.Bold
+                        FormTextField(
+                            label = "Draw amount",
+                            name = "drawAmount",
+                            validators = listOf(Required("Draw cannot be empty")),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            )
                         ),
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .fillMaxWidth(), colors = textOutLineStyle
-                    )
-
-                }
-
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = startDate,
-                            onValueChange = { startDate = it },
+                        FormTextField(
+                            label = "Installment",
+                            name = "installment",
+                            validators = listOf(Required("Installment cannot be empty")),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            )
+                        ),
+                        FormDateField(
+                            label = "Start Date",
+                            name = "startDate",
+                            validators = listOf(Required("Start cannot be empty")),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
                             readOnly = true,
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.DateRange,
                                     contentDescription = "start date"
                                 )
-                            },
-                            label = { Text("Start Date") },
-                            maxLines = 1,
-                            textStyle = TextStyle(
-                                color = colorResource(id = R.color.semi_green),
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
+                            }
+                        ),
+                        FormDateField(
+                            label = "End Date",
+                            name = "endDate",
+                            onClick = {},
+                            validators = listOf(Required("End Date cannot be empty")),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
                             ),
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .weight(1f), colors = textOutLineStyle
-                        )
-
-                        OutlinedTextField(
-                            value = endDate,
-                            onValueChange = { endDate = it },
                             readOnly = true,
-                            label = { Text("End Date") },
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.DateRange,
-                                    contentDescription = "end date"
+                                    contentDescription = "send date"
                                 )
-                            },
-                            maxLines = 1,
-                            textStyle = TextStyle(
-                                color = colorResource(id = R.color.semi_green),
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
+                            }
+                        ),
+                        FormDateField(
+                            label = "Draw Date",
+                            name = "drawDate",
+                            onClick = {},
+                            validators = listOf(Required("Draw Date cannot be empty")),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
                             ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp)
-                                .weight(1f), colors = textOutLineStyle
+                            readOnly = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.DateRange,
+                                    contentDescription = "draw date"
+                                )
+                            }
+                        ),
+
                         )
+                )
 
-                    }
-                }
-
-                item {
-                    OutlinedTextField(
-                        value = drawDate,
-                        onValueChange = { drawDate = it },
-                        readOnly = true,
-                        label = { Text("Draw Date") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Filled.DateRange,
-                                contentDescription = "end date"
-                            )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = {
+                            if (state.validate()) {
+                                val entity = ChitsMasterEntity(
+                                    title = state.getData()["title"],
+                                    currencyId = state.getData()["currency"],
+                                    drawAmount = state.getData()["drawAmount"],
+                                    instalment = state.getData()["installment"],
+                                    startDate = state.getData()["startDate"],
+                                    endDate = state.getData()["endDate"],
+                                    drawDate = state.getData()["drawDate"],
+                                    lastPaymentDate = "",
+                                    id = 0
+                                )
+                                viewModel.addChits(entity)
+                            }
                         },
-                        maxLines = 2,
-                        textStyle = TextStyle(
-                            color = colorResource(id = R.color.semi_green),
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = colorResource(id = R.color.semi_green),
+                            contentColor = Color.White
                         ),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp), colors = textOutLineStyle
-                    )
-
-
-                }
-
-                item {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Button(
-                            onClick = { },
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = colorResource(id = R.color.semi_green),
-                                contentColor = Color.White
-                            ),
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .width(250.dp)
-                        ) {
-                            Text(text = "Submit")
-                        }
+                            .align(Alignment.Center)
+                            .width(250.dp)
+                    ) {
+                        Text(text = "Submit")
                     }
-
                 }
             }
         }
     }
 }
 
-@Composable
-fun SpecimenSpinners(
-    textOutLineStyle: TextFieldColors,
-    specimens: List<String>,
-    textChange: (String) -> Unit
-) {
-
-    var specimenText by remember { mutableStateOf("") }
-    var expanded by remember { mutableStateOf(false) }
 
 
-    Box(modifier = Modifier.padding(10.dp)) {
-        OutlinedTextField(
-            value = (specimenText),
-            onValueChange = textChange,
-            textStyle = TextStyle(color = colorResource(id = R.color.semi_green)),
-            label = {
-                Text(
-                    text = "Select Currency",
-                    style = TextStyle(
-                    )
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = textOutLineStyle,
-            trailingIcon = { Icon(Icons.Outlined.ArrowDropDown, null) },
-            readOnly = true,
 
-            )
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            Modifier.fillMaxWidth()
-        ) {
-            specimens.forEach { specimen ->
-                DropdownMenuItem(onClick = {
-                    expanded = false
-                    specimenText = specimen
-                }) {
-                    Text(
-                        text = specimen,
-                        style = TextStyle(color = colorResource(id = R.color.semi_green))
-                    )
-                }
-            }
-        }
-        Spacer(
-            modifier = Modifier
-                .matchParentSize()
-                .background(Color.Transparent)
-                .padding(5.dp)
-                .clickable(
-                    onClick = { expanded = !expanded }
-                )
-        )
-    }
-}

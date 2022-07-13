@@ -2,7 +2,7 @@ package com.arch.mvvmjetpack.screen.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.arch.mvvmjetpack.data.news.Result
+import com.arch.mvvmjetpack.database.ChitsMasterEntity
 import com.arch.mvvmjetpack.network.BaseResult
 import com.arch.mvvmjetpack.network.NetworkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,10 +19,9 @@ class AddChitsViewModel @Inject constructor(private val repository: NetworkRepos
     private val currentState = MutableStateFlow<AddChitState>(AddChitState.Init)
     val mState: StateFlow<AddChitState> get() = currentState
 
-
-    fun loadAllProducts() {
+    fun addChits(chitsMasterEntity: ChitsMasterEntity) {
         viewModelScope.launch {
-            repository.getAllNews().onStart {
+            repository.addChitItems(chitsMasterEntity).onStart {
                 currentState.value = AddChitState.IsLoading(true)
             }.catch {
                 currentState.value = AddChitState.IsLoading(false)
@@ -30,7 +29,7 @@ class AddChitsViewModel @Inject constructor(private val repository: NetworkRepos
                 currentState.value = AddChitState.IsLoading(false)
                 when (ml) {
                     is BaseResult.Success -> {
-                        currentState.value = AddChitState.Data(ml.data.results ?: emptyList())
+                        AddChitState.Data(ml.data)
                     }
                     else -> {}
                 }
@@ -45,5 +44,5 @@ sealed class AddChitState {
     object Init : AddChitState()
     data class IsLoading(val isLoading: Boolean) : AddChitState()
     data class ShowToast(val message: String) : AddChitState()
-    data class Data(val data: List<Result>) : AddChitState()
+    data class Data(val data: Boolean) : AddChitState()
 }
